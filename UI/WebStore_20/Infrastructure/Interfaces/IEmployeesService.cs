@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using WebStore.ViewModels;
+using WebStore.Domain.ViewModels;
 
 namespace WebStore.Interfaces.Infrastructure
 {

@@ -1,4 +1,6 @@
-﻿namespace WebStore.ViewModels
+﻿using WebStore.ViewModels;
+
+namespace WebStore.Domain.ViewModels
 {
     public class OrderDetailsViewModel
     {

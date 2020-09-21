@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using WebStore.DAL;
 using WebStore.Domain;
 using WebStore.Domain.Entities;
+using WebStore.Domain.ViewModels;
 using WebStore.Infrastructure.Interfaces;
 using WebStore.ViewModels;
 
