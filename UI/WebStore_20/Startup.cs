@@ -11,8 +11,8 @@ using WebStore.DAL;
 using WebStore.Domain;
 using WebStore.Infrastructure;
 using WebStore.Infrastructure.Interfaces;
-using WebStore.Infrastructure.Services;
 using WebStore.Interfaces.Infrastructure;
+using WebStore.Services.Products;
 
 namespace WebStore
 {

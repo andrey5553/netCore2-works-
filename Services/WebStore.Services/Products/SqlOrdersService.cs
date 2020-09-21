@@ -7,9 +7,9 @@ using WebStore.DAL;
 using WebStore.Domain;
 using WebStore.Domain.Entities;
 using WebStore.Domain.ViewModels;
-using WebStore.Infrastructure.Interfaces;
+using WebStore.Interfaces.Services;
 
-namespace WebStore.Infrastructure.Services
+namespace WebStore.Services.Products
 {
     public class SqlOrdersService : IOrdersService
     {

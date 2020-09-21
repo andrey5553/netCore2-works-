@@ -1,20 +1,19 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using WebStore.DAL;
 using WebStore.Domain;
 using WebStore.Domain.Entities;
-using WebStore.Infrastructure.Interfaces;
+using WebStore.Interfaces.Services;
 
-namespace WebStore.Infrastructure.Services
+namespace WebStore.Services.Products
 {
-    public class SqlProductService: IProductService
+    public class SqlProductService : IProductService
     {
         private readonly WebStoreContext _context;
 
-        public SqlProductService(WebStoreContext  context)
+        public SqlProductService(WebStoreContext context)
         {
             _context = context;
         }
