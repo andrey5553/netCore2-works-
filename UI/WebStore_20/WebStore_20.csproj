@@ -25,11 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebStore.DAL\WebStore.DAL.csproj" />
-    <ProjectReference Include="..\WebStore.Domain\WebStore.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="Views\Shared\_Partial\_Slider.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
