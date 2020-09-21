@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -7,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using WebStore.DAL;
 using WebStore.Domain;
 using WebStore.Infrastructure;
-using WebStore.Infrastructure.Interfaces;
-using WebStore.Interfaces.Infrastructure;
+using WebStore.Interfaces.Services;
 using WebStore.Services.Products;
 
 namespace WebStore
