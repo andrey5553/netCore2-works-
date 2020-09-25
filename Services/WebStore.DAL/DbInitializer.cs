@@ -10,9 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace WebStore.DAL
 {
-    public static class DbInitializer
+    public class DbInitializer
     {
-        public static void Initialize(WebStoreContext context)
+        public void Initialize(WebStoreContext context)
         {
             context.Database.EnsureCreated();
             // Look for any products.
@@ -442,7 +442,7 @@ namespace WebStore.DAL
 
         }
 
-        public static void InitializeUsers(IServiceProvider services)
+        public void InitializeUsers(IServiceProvider services)
         {
             var roleManager = services.GetService<RoleManager<IdentityRole>>();
             EnsureRole(roleManager, "Users");
@@ -451,7 +451,7 @@ namespace WebStore.DAL
             EnsureRoleToUser(services, "Admin", "Admins", "admin@123");
         }
 
-        private static void EnsureRoleToUser(IServiceProvider services, string userName, string roleName, string password)
+        private void EnsureRoleToUser(IServiceProvider services, string userName, string roleName, string password)
         {
             var userManager = services.GetService<UserManager<User>>();
             var userStore = services.GetService<IUserStore<User>>();
@@ -472,7 +472,7 @@ namespace WebStore.DAL
                 userManager.AddToRoleAsync(admin, roleName).Wait(); // даем ему роль админа
         }
 
-        private static void EnsureRole(RoleManager<IdentityRole> roleManager, string roleName)
+        private void EnsureRole(RoleManager<IdentityRole> roleManager, string roleName)
         {
             if (!roleManager.RoleExistsAsync(roleName).Result)
                 roleManager.CreateAsync(new IdentityRole(roleName)).Wait();
