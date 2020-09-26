@@ -1,0 +1,29 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WebStore.Domain;
+using WebStore.Interfaces.Services;
+
+namespace WebStore.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [Authorize(Roles = "Admins")]
+    public class HomeController : Controller
+    {
+        private readonly IProductService _productService;
+
+        public HomeController(IProductService productService)
+        {
+            _productService = productService;
+        }
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+        public IActionResult Productslist()
+        {
+            var products = _productService.GetProducts(new ProductFilter());
+            return View(products);
+        }
+    }
+}
