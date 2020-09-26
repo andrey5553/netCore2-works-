@@ -3,15 +3,16 @@ using WebStore.Interfaces.TestApi;
 
 namespace WebStore.Controllers
 {
-    public class WebApiTestController : Controller
+    public class WebAPITestController : Controller
     {
-        private readonly IValueService _valueService;
+        private readonly IValueService _ValueService;
 
-        public WebApiTestController(IValueService valueService) => _valueService = valueService;
+        public WebAPITestController(IValueService ValueService) => _ValueService = ValueService;
 
         public IActionResult Index()
         {
-            var values = _valueService.Get();
+            var values = _ValueService.Get();
+
             return View(values);
         }
     }

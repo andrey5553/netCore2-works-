@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WebStore.Domain.DTO.Orders;
 using WebStore.Domain.ViewModels;
 using WebStore.Interfaces.Services;
 
@@ -7,69 +11,67 @@ namespace WebStore.Controllers
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
-        private readonly IOrdersService _ordersService;
 
-        public CartController(ICartService cartService, IOrdersService ordersService)
-        {
-            _cartService = cartService;
-            _ordersService = ordersService;
-        }
+        public CartController(ICartService cartService) => _cartService = cartService;
 
-        public IActionResult Details()
+        public IActionResult Details() => View(new CartOrderViewModel { Cart = _cartService.TransformCart() });
+
+        public IActionResult AddToCart(int id)
         {
-            var model = new OrderDetailsViewModel()
-            {
-                CartViewModel = _cartService.TransformCart(),
-                OrderViewModel = new OrderViewModel()
-            };
-            return View(model);
+            _cartService.AddToCart(id);
+            return RedirectToAction(nameof(Details));
         }
 
         public IActionResult DecrementFromCart(int id)
         {
             _cartService.DecrementFromCart(id);
-            return RedirectToAction("Details");
+            return RedirectToAction(nameof(Details));
         }
 
         public IActionResult RemoveFromCart(int id)
         {
             _cartService.RemoveFromCart(id);
-            return RedirectToAction("Details");
+            return RedirectToAction(nameof(Details));
         }
 
-        public IActionResult RemoveAll()
+        public IActionResult Clear()
         {
             _cartService.RemoveAll();
-            return RedirectToAction("Details");
+            return RedirectToAction(nameof(Details));
         }
 
-        public IActionResult AddToCart(int id, string returnUrl)
+        [Authorize]
+        public async Task<IActionResult> CheckOut(OrderViewModel OrderModel, [FromServices] IOrdersService OrderService)
         {
-            _cartService.AddToCart(id);
-            return Redirect(returnUrl);
-        }
+            if (!ModelState.IsValid)
+                return View(nameof(Details), new CartOrderViewModel
+                {
+                    Cart = _cartService.TransformCart(),
+                    Order = OrderModel
+                });
 
-        /// создание заказа
-        [HttpPost, ValidateAntiForgeryToken]
-        public IActionResult CheckOut(OrderViewModel model)
-        {
-            if (ModelState.IsValid)
+            var order_model = new CreateOrderModel
             {
-                var orderResult = _ordersService.CreateOrder(model, _cartService.TransformCart(), User.Identity.Name);
-                _cartService.RemoveAll();
-                return RedirectToAction("OrderConfirmed", new { id = orderResult.Id });
-            }
-            var detailsModel = new OrderDetailsViewModel()
-            {
-                CartViewModel = _cartService.TransformCart(),
-                OrderViewModel = model
+                Order = OrderModel,
+                Items = _cartService.TransformCart().Items
+                   .Select(item => new OrderItemDTO
+                    {
+                        Id = item.Product.Id,
+                        Price = item.Product.Price,
+                        Quantity = item.Quantity
+                    })
             };
-            return View("Details", detailsModel);
+
+            var order = await OrderService.CreateOrder(User.Identity.Name, order_model);
+
+            _cartService.RemoveAll();
+
+            return RedirectToAction(nameof(OrderConfirmed), new { id = order.Id });
         }
 
         public IActionResult OrderConfirmed(int id)
         {
-            ViewBag.OrderId = id; 
+            ViewBag.OrderId = id;
             return View();
         }
     }

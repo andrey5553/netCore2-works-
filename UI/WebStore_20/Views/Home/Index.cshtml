@@ -1,18 +1,33 @@
-﻿@{
-    ViewData["Title"] = "Главная страница";
+﻿@using WebStore.Interfaces.Services
+@using WebStore.Services.Mapping
+@inject IProductService ProductService
+@{
+    var products = ProductService
+        .GetProducts()
+        .FromDTO()
+        .Take(6)
+        .ToView()
+        .OrderBy(p => p.Order);
 }
 
-@await Html.PartialAsync("_Partial/_Slider")
+@*@await Html.PartialAsync("Partial/_Slider")*@
+<partial name="Partial/_Slider" />
 
 <section>
-    <div class="row">
-        <div class="col-sm-3">
-            @await Html.PartialAsync("_Partial/_LeftSideBar")
-        </div>
-        <div class="col-sm-9 padding-right">
-            @*@await Html.PartialAsync("_Partial/_FeaturedItems", .....)*@
-            @await Html.PartialAsync("_Partial/_CategoryTab")
-            @await Html.PartialAsync("_Partial/_RecommendedItems")
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-3">
+                <partial name="Partial/_LeftSideBar" />
+            </div>
+
+            <div class="col-sm-9 padding-right">
+
+                <partial name="Partial/_FeaturesItems" model="products"/>
+
+                <partial name="Partial/_CategoryTab"/>
+
+                <partial name="Partial/_RecomendedItems"/>
+            </div>
         </div>
     </div>
 </section>

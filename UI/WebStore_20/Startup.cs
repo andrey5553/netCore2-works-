@@ -7,13 +7,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using WebStore.Clients.Employees;
+using WebStore.Clients.Orders;
+using WebStore.Clients.Products;
 using WebStore.Clients.Values;
 using WebStore.DAL;
 using WebStore.Domain;
+using WebStore.Domain.Entities.Identity;
 using WebStore.Infrastructure;
 using WebStore.Interfaces.Services;
 using WebStore.Interfaces.TestApi;
+using WebStore.Services.Data;
 using WebStore.Services.Products;
+using WebStore.Services.Products.InCookies;
 
 namespace WebStore
 {
@@ -21,42 +27,108 @@ namespace WebStore
     {
         private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => _configuration = configuration;
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<WebStoreContext>(opt =>
+            services.AddDbContext<WebStoreDb>(opt =>
                 opt.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<DbInitializer>();
 
-            services.AddWebStoreServices();
+            services.AddIdentity<User, Role>(opt => { })
+               .AddEntityFrameworkStores<WebStoreDb>()
+               .AddDefaultTokenProviders();
 
-            // Сервис нужен для работы корзины...
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.Configure<IdentityOptions>(opt =>
+            {
+                #if DEBUG
+                opt.Password.RequiredLength = 3;
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequiredUniqueChars = 3;
+                #endif
 
-            services.AddControllers();
+                opt.User.RequireUniqueEmail = false;
+                opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+                opt.Lockout.AllowedForNewUsers = true;
+                opt.Lockout.MaxFailedAccessAttempts = 10;
+                opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+            });
+
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.Cookie.Name = "WebStore-GB";
+                opt.Cookie.HttpOnly = true;
+                opt.ExpireTimeSpan = TimeSpan.FromDays(10);
+
+                opt.LoginPath = "/Account/Login";
+                opt.LogoutPath = "/Account/Logout";
+                opt.AccessDeniedPath = "/Account/AccessDenied";
+
+                opt.SlidingExpiration = true;
+            });
+
+            services
+               .AddControllersWithViews()
+               .AddRazorRuntimeCompilation();
+
+            services.AddScoped<IEmployeesService, EmployeesClient>();
+            services.AddScoped<IProductService, ProductsClient>();
+            services.AddScoped<IOrdersService, OrdersClient>();
+
+            services.AddScoped<ICartService, CookieCartService>();
+
+            services.AddScoped<IValueService, ValuesClient>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, WebStoreDBInitializer db)
         {
+            db.Initialize();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
             }
 
+            app.UseStaticFiles();
+            app.UseDefaultFiles();
+
             app.UseRouting();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseWelcomePage("/welcome");
+
+            //app.Use(async (context, next) =>
+            //{
+            //    //Действия над context до следующего элемента в конвейере
+            //    await next(); // Вызов следующего промежуточного ПО в конвейере
+            //    // Действия над context после следующего элемента в конвейере
+            //});
+
+            //app.UseMiddleware<TestMiddleware>();
+
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapGet("/greetings", async context =>
+                {
+                    await context.Response.WriteAsync(_configuration["CustomGreetings"]);
+                });
+
+                endpoints.MapControllerRoute(
+                    name: "areas",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" // http://localhost:5000/admin/home/index
+                );
+
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
             });
         }
     }

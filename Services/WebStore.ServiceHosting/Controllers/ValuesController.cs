@@ -4,47 +4,45 @@ using System.Linq;
 
 namespace WebStore.ServiceHosting.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
+    [Route("api/values")]
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        private static readonly List<string> _values =
-            Enumerable
-            .Range(1, 10)
-            .Select(i => $"value-{i}")
-            .ToList();
+        private static readonly List<string> __Values = Enumerable
+           .Range(1, 10)
+           .Select(i => $"Value-{i}")
+           .ToList();
 
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get() => _values;
+        public ActionResult<IEnumerable<string>> Get() => __Values;
 
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
             if (id < 0)
-            {
                 return BadRequest();
-            }
-            if (id >= _values.Count)
-            {
+            if (id >= __Values.Count)
                 return NotFound();
-            }
-            return _values[id];
-        }
 
-        [HttpPut("{id}")]
-        public ActionResult Put(int id, string value)
-        {
-            if (id < 0 || id >= _values.Count)
-                return BadRequest();
-
-            _values[id] = value;
-            return Ok();
+            return __Values[id];
         }
 
         [HttpPost]
         public ActionResult Post(string value)
         {
-            _values.Add(value);
+            __Values.Add(value);
+            return Ok();
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult Put(int id, string vaule)
+        {
+            if (id < 0 || id >= __Values.Count)
+                return BadRequest();
+
+            __Values[id] = vaule;
+
             return Ok();
         }
 
@@ -53,10 +51,11 @@ namespace WebStore.ServiceHosting.Controllers
         {
             if (id < 0)
                 return BadRequest();
-            if (id >= _values.Count)
+            if (id >= __Values.Count)
                 return NotFound();
 
-            _values.RemoveAt(id);
+            __Values.RemoveAt(id);
+
             return Ok();
         }
     }

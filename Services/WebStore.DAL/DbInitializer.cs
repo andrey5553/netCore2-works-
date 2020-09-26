@@ -7,12 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using WebStore.Domain;
 using WebStore.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using WebStore.Domain.Entities.Identity;
 
 namespace WebStore.DAL
 {
     public class DbInitializer
     {
-        public void Initialize(WebStoreContext context)
+        public void Initialize(WebStoreDb context)
         {
             context.Database.EnsureCreated();
             // Look for any products.
