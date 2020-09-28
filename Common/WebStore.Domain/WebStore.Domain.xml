@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WebStore.Domain</name>
+    </assembly>
+    <members>
+        <member name="P:WebStore.Domain.Entities.Base.NamedEntity.Name">
+            <summary>Имя</summary>
+        </member>
+        <member name="P:WebStore.Domain.Entities.Category.ParentId">
+            <summary>
+            Родительская секция (при наличии)
+            </summary>
+        </member>
+        <member name="P:WebStore.Domain.Entities.Employee.Surname">
+            <summary>Фамилия</summary>
+        </member>
+        <member name="P:WebStore.Domain.Entities.Employee.Patronymic">
+            <summary>Отчество</summary>
+        </member>
+        <member name="P:WebStore.Domain.Entities.Employee.Age">
+            <summary>Возраст</summary>
+        </member>
+        <member name="P:WebStore.Domain.Entities.Employee.EmployementDate">
+            <summary>Дата поступления на работу</summary>
+        </member>
+        <member name="T:WebStore.Domain.ProductFilter">
+            <summary>
+            Класс для фильтрации товаров
+            </summary>
+        </member>
+        <member name="P:WebStore.Domain.ViewModels.BrandViewModel.ProductsCount">
+            <summary>
+            Количество товаров бренда
+            </summary>
+        </member>
+        <member name="P:WebStore.Domain.ViewModels.CategoryViewModel.ChildCategories">
+            <summary>
+            Дочерние секции
+            </summary>
+        </member>
+        <member name="P:WebStore.Domain.ViewModels.CategoryViewModel.ParentCategory">
+            <summary>
+            Родительская секция
+            </summary>
+        </member>
+    </members>
+</doc>
