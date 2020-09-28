@@ -9,7 +9,7 @@ using WebStore.DAL;
 
 namespace WebStore.DAL.Migrations
 {
-    [DbContext(typeof(WebStoreContext))]
+    [DbContext(typeof(WebStoreDb))]
     [Migration("20200910183557_IdentityAdded")]
     partial class IdentityAdded
     {

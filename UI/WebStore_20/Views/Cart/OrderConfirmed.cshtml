@@ -1,5 +1,13 @@
-﻿@{
-    ViewData["Title"] = "Ваш заказ принят";
+﻿
+@{
+    ViewData["Title"] = "Заказ сформирован";
 }
 
-<h2>Ваш заказ под номером @ViewBag.OrderId принят и в скором времени будет обработан</h2>
+<div class="container">
+    <h2>@ViewData["Title"]</h2>
+    
+    <p>Заказ @ViewBag.OrderId сформирован и в скором времени будет обработан</p>
+    
+    <a asp-controller="Home" asp-action="Index">На главную</a>
+</div>
+

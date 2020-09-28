@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using WebStore.Domain;
 using WebStore.Domain.ViewModels;
 using WebStore.Interfaces.Services;
+using WebStore.Services.Mapping;
 
 namespace WebStore.Controllers
 {
@@ -10,54 +11,34 @@ namespace WebStore.Controllers
     {
         private readonly IProductService _productService;
 
-        public CatalogController(IProductService productService)
-        {
-            _productService = productService;
-        }
+        public CatalogController(IProductService productService) => _productService = productService;
 
-        public IActionResult Shop(int? categoryId, int? brandId)
+        public IActionResult Shop(int? BrandId, int? SectionId)
         {
-            // получаем список отфильтрованных продуктов
-            var products = _productService.GetProducts(
-                new ProductFilter { BrandId = brandId, CategoryId = categoryId });
-
-            // сконвертируем в CatalogViewModel
-            var model = new CatalogViewModel()
+            var filter = new ProductFilter
             {
-                BrandId = brandId,
-                CategoryId = categoryId,
-                Products = products.Select(p => new ProductViewModel()
-                {
-                    Id = p.Id,
-                    ImageUrl = p.ImageUrl,
-                    Name = p.Name,
-                    Order = p.Order,
-                    Price = p.Price,
-                    BrandName = p.Brand?.Name ?? string.Empty
-                }).OrderBy(p => p.Order).ToList()
+                BrandId = BrandId,
+                SectionId = SectionId
             };
 
-            return View(model);
+            var products = _productService.GetProducts(filter);
+
+            return View(new CatalogViewModel
+            {
+                CategoryId = SectionId,
+                BrandId = BrandId,
+                Products = products.FromDTO().ToView().OrderBy(p => p.Order)
+            });
         }
 
-        public IActionResult ProductDetails(int id)
+        public IActionResult Details(int id)
         {
             var product = _productService.GetProductById(id);
-            if (product == null)
+
+            if (product is null)
                 return NotFound();
 
-            return View(new ProductViewModel
-            {
-                Id = product.Id,
-                ImageUrl = product.ImageUrl,
-                Name = product.Name,
-                Order = product.Order,
-                Price = product.Price,
-                BrandName = product.Brand?.Name ?? string.Empty
-            });
-
+            return View(product.FromDTO().ToView());
         }
-
-
     }
 }

@@ -7,13 +7,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using WebStore.Clients.Employees;
+using WebStore.Clients.Orders;
+using WebStore.Clients.Products;
 using WebStore.Clients.Values;
 using WebStore.DAL;
 using WebStore.Domain;
+using WebStore.Domain.Entities.Identity;
 using WebStore.Infrastructure;
 using WebStore.Interfaces.Services;
 using WebStore.Interfaces.TestApi;
+using WebStore.Services.Data;
 using WebStore.Services.Products;
+using WebStore.Services.Products.InCookies;
 
 namespace WebStore
 {
@@ -21,133 +27,109 @@ namespace WebStore
     {
         private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => _configuration = configuration;
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
-            {
-                //options.Filters.Add(typeof(SimpleActionFilter)); // подключение по типу
+            services.AddDbContext<WebStoreDb>(opt =>
+                opt.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
+            services.AddTransient<DbInitializer>();
 
-                // альтернативный вариант подключения
-                options.Filters.Add(new SimpleActionFilter()); // подключение по объекту
+            services.AddIdentity<User, Role>(opt => { })
+               .AddEntityFrameworkStores<WebStoreDb>()
+               .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(opt =>
+            {
+                #if DEBUG
+                opt.Password.RequiredLength = 3;
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireLowercase = false;
+                opt.Password.RequireUppercase = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequiredUniqueChars = 3;
+                #endif
+
+                opt.User.RequireUniqueEmail = false;
+                opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+                opt.Lockout.AllowedForNewUsers = true;
+                opt.Lockout.MaxFailedAccessAttempts = 10;
+                opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
             });
 
-            services.AddDbContext<WebStoreContext>(options => options
-                .UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
-
-            // Добавляем разрешение зависимости
-            services.AddSingleton<IEmployeesService, InMemoryEmployeesService>();
-            services.AddScoped<IProductService, SqlProductService>();
-            services.AddScoped<IValueService, ValuesClient>();
-
-            services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<WebStoreContext>()
-                .AddDefaultTokenProviders();
-
-            services.Configure<IdentityOptions>(options => // необязательно
+            services.ConfigureApplicationCookie(opt =>
             {
-                // Password settings
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 5;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireLowercase = false;
+                opt.Cookie.Name = "WebStore-GB";
+                opt.Cookie.HttpOnly = true;
+                opt.ExpireTimeSpan = TimeSpan.FromDays(10);
 
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
-                options.Lockout.MaxFailedAccessAttempts = 10;
-                options.Lockout.AllowedForNewUsers = true;
+                opt.LoginPath = "/Account/Login";
+                opt.LogoutPath = "/Account/Logout";
+                opt.AccessDeniedPath = "/Account/AccessDenied";
 
-                // User settings
-                options.User.RequireUniqueEmail = true;
+                opt.SlidingExpiration = true;
             });
 
-            services.ConfigureApplicationCookie(options => // необязательно
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.LoginPath = "/Account/Login"; // If the LoginPath is not set here, ASP.NET Core will default to /Account/Login
-                options.LogoutPath = "/Account/Logout"; // If the LogoutPath is not set here, ASP.NET Core will default to /Account/Logout
-                options.AccessDeniedPath = "/Account/AccessDenied"; // If the AccessDeniedPath is not set here, ASP.NET Core will default to /Account/AccessDenied
-                options.SlidingExpiration = true;
-            });
+            services
+               .AddControllersWithViews()
+               .AddRazorRuntimeCompilation();
 
-            //Настройки для корзины
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IEmployeesService, EmployeesClient>();
+            services.AddScoped<IProductService, ProductsClient>();
+            services.AddScoped<IOrdersService, OrdersClient>();
+
             services.AddScoped<ICartService, CookieCartService>();
-            services.AddScoped<IOrdersService, SqlOrdersService>();
+
+            services.AddScoped<IValueService, ValuesClient>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, WebStoreDBInitializer db)
         {
+            db.Initialize();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
             }
 
             app.UseStaticFiles();
+            app.UseDefaultFiles();
 
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            var helloString = _configuration["CustomHelloWorld"];
-            //var helloString = _configuration["Logging:LogLevel:Default"];
-
             app.UseWelcomePage("/welcome");
 
-            app.UseMiddleware<TokenMiddleware>();
+            //app.Use(async (context, next) =>
+            //{
+            //    //Действия над context до следующего элемента в конвейере
+            //    await next(); // Вызов следующего промежуточного ПО в конвейере
+            //    // Действия над context после следующего элемента в конвейере
+            //});
 
-            UseMiddlewareSample(app);
-
-            app.Map("/index", CustomIndexHandler);
+            //app.UseMiddleware<TestMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-            });
-
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("No handler found for this request...");
-            });
-        }
-
-        private void CustomIndexHandler(IApplicationBuilder app)
-        {
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("response to /Index URL...");
-            });
-        }
-
-        private void UseMiddlewareSample(IApplicationBuilder app)
-        {
-            app.Use(async (context, next) =>
-            {
-                bool isError = false;
-                // ...
-                if (isError)
+                endpoints.MapGet("/greetings", async context =>
                 {
-                    await context.Response
-                        .WriteAsync("Error occured. You're in custom pipeline module...");
-                }
-                else
-                {
-                    await next.Invoke();
-                }
+                    await context.Response.WriteAsync(_configuration["CustomGreetings"]);
+                });
+
+                endpoints.MapControllerRoute(
+                    name: "areas",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}" // http://localhost:5000/admin/home/index
+                );
+
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}"
+                );
             });
         }
-
     }
 }

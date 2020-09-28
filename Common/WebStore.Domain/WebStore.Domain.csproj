@@ -11,4 +11,11 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTO\Products\" />
+    <Folder Include="DTO\Orders\" />
+    <Folder Include="Entities\Identity\" />
+    <Folder Include="ViewModels\Identity\" />
+  </ItemGroup>
+
 </Project>

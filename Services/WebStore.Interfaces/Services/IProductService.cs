@@ -1,20 +1,17 @@
 ﻿using System.Collections.Generic;
 using WebStore.Domain;
-using WebStore.Domain.Entities;
+using WebStore.Domain.DTO.Products;
 
 namespace WebStore.Interfaces.Services
 {
     public interface IProductService
     {
-        IEnumerable<Category> GetCategories();
-        IEnumerable<Brand> GetBrands();
-        IEnumerable<Product> GetProducts(ProductFilter filter);
-        /// <summary>
-        /// Получить товар по Id
-        /// </summary>
-        /// <param name="id">Идентификатор</param>
-        /// <returns>Сущность Product, если нашел, иначе null</returns>
-        Product GetProductById(int id);
+        IEnumerable<SectionDTO> GetCategories();
 
+        IEnumerable<BrandDTO> GetBrands();
+
+        IEnumerable<ProductDTO> GetProducts(ProductFilter Filter = null);
+
+        ProductDTO GetProductById(int id);
     }
 }
