@@ -1,55 +1,60 @@
-п»їusing Microsoft.AspNetCore.Builder;
+using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using WebStore.Clients.Employees;
+using WebStore.Clients.Identity;
 using WebStore.Clients.Orders;
 using WebStore.Clients.Products;
 using WebStore.Clients.Values;
-using WebStore.DAL;
-using WebStore.Domain;
 using WebStore.Domain.Entities.Identity;
-using WebStore.Infrastructure;
 using WebStore.Interfaces.Services;
 using WebStore.Interfaces.TestApi;
-using WebStore.Services.Data;
-using WebStore.Services.Products;
 using WebStore.Services.Products.InCookies;
 
 namespace WebStore
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration _Configuration;
 
-        public Startup(IConfiguration configuration) => _configuration = configuration;
+        public Startup(IConfiguration Configuration) => _Configuration = Configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<WebStoreDb>(opt =>
-                opt.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
-            services.AddTransient<DbInitializer>();
-
-            services.AddIdentity<User, Role>(opt => { })
-               .AddEntityFrameworkStores<WebStoreDb>()
+            services.AddIdentity<User, Role>(opt => {  })
                .AddDefaultTokenProviders();
+
+            #region WebAPI Identity clients stores
+
+            services
+               .AddTransient<IUserStore<User>, UsersClient>()
+               .AddTransient<IUserPasswordStore<User>, UsersClient>()
+               .AddTransient<IUserEmailStore<User>, UsersClient>()
+               .AddTransient<IUserPhoneNumberStore<User>, UsersClient>()
+               .AddTransient<IUserTwoFactorStore<User>, UsersClient>()
+               .AddTransient<IUserClaimStore<User>, UsersClient>()
+               .AddTransient<IUserLoginStore<User>, UsersClient>();
+            services
+               .AddTransient<IRoleStore<Role>, RolesClient>(); 
+
+            #endregion
 
             services.Configure<IdentityOptions>(opt =>
             {
-                #if DEBUG
+#if DEBUG
                 opt.Password.RequiredLength = 3;
                 opt.Password.RequireDigit = false;
                 opt.Password.RequireLowercase = false;
                 opt.Password.RequireUppercase = false;
                 opt.Password.RequireNonAlphanumeric = false;
                 opt.Password.RequiredUniqueChars = 3;
-                #endif
 
+#endif
                 opt.User.RequireUniqueEmail = false;
                 opt.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
@@ -84,10 +89,8 @@ namespace WebStore
             services.AddScoped<IValueService, ValuesClient>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, WebStoreDBInitializer db)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            db.Initialize();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -106,9 +109,9 @@ namespace WebStore
 
             //app.Use(async (context, next) =>
             //{
-            //    //Р”РµР№СЃС‚РІРёСЏ РЅР°Рґ context РґРѕ СЃР»РµРґСѓСЋС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° РІ РєРѕРЅРІРµР№РµСЂРµ
-            //    await next(); // Р’С‹Р·РѕРІ СЃР»РµРґСѓСЋС‰РµРіРѕ РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅРѕРіРѕ РџРћ РІ РєРѕРЅРІРµР№РµСЂРµ
-            //    // Р”РµР№СЃС‚РІРёСЏ РЅР°Рґ context РїРѕСЃР»Рµ СЃР»РµРґСѓСЋС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° РІ РєРѕРЅРІРµР№РµСЂРµ
+            //    //Действия над context до следующего элемента в конвейере
+            //    await next(); // Вызов следующего промежуточного ПО в конвейере
+            //    // Действия над context после следующего элемента в конвейере
             //});
 
             //app.UseMiddleware<TestMiddleware>();
@@ -117,7 +120,7 @@ namespace WebStore
             {
                 endpoints.MapGet("/greetings", async context =>
                 {
-                    await context.Response.WriteAsync(_configuration["CustomGreetings"]);
+                    await context.Response.WriteAsync(_Configuration["CustomGreetings"]);
                 });
 
                 endpoints.MapControllerRoute(

@@ -50,7 +50,7 @@ namespace WebStore.ServiceHosting.Controllers
         }
 
         // Будет ошибка при автоматизированной генерации документации по WebAPI
-        //[NonAction]
+        [NonAction]
         public void SaveChanges() => _employeesService.SaveChanges();
     }
 }
