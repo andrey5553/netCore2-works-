@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WebStore.ServiceHosting</name>
+    </assembly>
+    <members>
+        <member name="T:WebStore.ServiceHosting.Controllers.EmployeesApiController">
+            <summary>API управления сотрудниками</summary>
+        </member>
+        <member name="M:WebStore.ServiceHosting.Controllers.EmployeesApiController.Get">
+            <summary>
+            Получить всех доступных сотрудников
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WebStore.ServiceHosting.Controllers.EmployeesApiController.GetById(System.Int32)">
+            <summary>Найти сотрудника по идентификатору</summary>
+            <param name="id">Идентификатор искомого сотрудника</param>
+            <returns>Найденный сотрудник</returns>
+        </member>
+        <member name="M:WebStore.ServiceHosting.Controllers.EmployeesApiController.Add(WebStore.Domain.Entities.Employee)">
+            <summary>Добавление нового сотрудника</summary>
+            <param name="employee">Новый сотрудник</param>
+            <returns>Идентификатор добавленного сотрудника</returns>
+        </member>
+        <member name="M:WebStore.ServiceHosting.Controllers.EmployeesApiController.Edit(WebStore.Domain.Entities.Employee)">
+            <summary>
+            Редактирование
+            </summary>
+        </member>
+        <member name="M:WebStore.ServiceHosting.Controllers.EmployeesApiController.Delete(System.Int32)">
+            <summary>Удаление</summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

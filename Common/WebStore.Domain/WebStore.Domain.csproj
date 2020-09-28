@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>WebStore.Domain.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.8" />
@@ -12,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DTO\Identity\" />
     <Folder Include="DTO\Products\" />
     <Folder Include="DTO\Orders\" />
     <Folder Include="Entities\Identity\" />
