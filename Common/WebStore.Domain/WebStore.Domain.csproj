@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DTO\Identity\" />
     <Folder Include="DTO\Products\" />
     <Folder Include="DTO\Orders\" />
     <Folder Include="Entities\Identity\" />
