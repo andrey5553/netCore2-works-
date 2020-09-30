@@ -6,23 +6,26 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WebStore.Clients.Employees;
 using WebStore.Clients.Identity;
 using WebStore.Clients.Orders;
 using WebStore.Clients.Products;
 using WebStore.Clients.Values;
 using WebStore.Domain.Entities.Identity;
+using WebStore.Infrastructure;
 using WebStore.Interfaces.Services;
 using WebStore.Interfaces.TestApi;
+using WebStore.Logger;
 using WebStore.Services.Products.InCookies;
 
 namespace WebStore
 {
     public class Startup
     {
-        private readonly IConfiguration _Configuration;
+        private readonly IConfiguration _configuration;
 
-        public Startup(IConfiguration Configuration) => _Configuration = Configuration;
+        public Startup(IConfiguration Configuration) => _configuration = Configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -89,13 +92,17 @@ namespace WebStore
             services.AddScoped<IValueService, ValuesClient>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory log)
         {
+            log.AddLog4Net();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             app.UseStaticFiles();
             app.UseDefaultFiles();
@@ -120,7 +127,7 @@ namespace WebStore
             {
                 endpoints.MapGet("/greetings", async context =>
                 {
-                    await context.Response.WriteAsync(_Configuration["CustomGreetings"]);
+                    await context.Response.WriteAsync(_configuration["CustomGreetings"]);
                 });
 
                 endpoints.MapControllerRoute(
